@@ -14,6 +14,8 @@ import SupportPage from './pages/dashboard/SupportPage';
 import BillingPage from './pages/dashboard/BillingPage';
 import SettingsPage from './pages/dashboard/SettingsPage';
 import PublicLandingPage from './pages/PublicLandingPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 function App() {
   return (
@@ -23,7 +25,11 @@ function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<LandingPage />} />
-              
+
+              {/* Páginas legales */}
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+
               {/* Ruta pública de landing pages creadas */}
               <Route path="/landing/:slug" element={<PublicLandingPage />} />
 

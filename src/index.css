@@ -1,1 +1,72 @@
-/* Global styles will be added in Task 2 */
+/* ── Language-switch fade animation ─────────────────────────────────────── */
+/*
+ * When the language is changing, key text elements fade out briefly.
+ * The `data-lang-changing` attribute is set on <html> for ~180 ms,
+ * removed after two rAF ticks so the new text fades back in smoothly.
+ */
+
+/* Elements that get the fade treatment */
+html[data-lang-changing] .nav__link,
+html[data-lang-changing] .btn--ghost-nav,
+html[data-lang-changing] .btn--primary,
+html[data-lang-changing] .nav__lang-btn,
+html[data-lang-changing] .hero__badge-text,
+html[data-lang-changing] .hero__title,
+html[data-lang-changing] .hero__subtitle,
+html[data-lang-changing] .hero__cta,
+html[data-lang-changing] .hero__stats,
+html[data-lang-changing] .section__label,
+html[data-lang-changing] .section__title,
+html[data-lang-changing] .section__desc,
+html[data-lang-changing] .marquee__track,
+html[data-lang-changing] .service-card__title,
+html[data-lang-changing] .service-card__desc,
+html[data-lang-changing] .feature-card__title,
+html[data-lang-changing] .feature-card__desc,
+html[data-lang-changing] .pricing-card__header,
+html[data-lang-changing] .pricing-card__features,
+html[data-lang-changing] .p-toggle__lbl,
+html[data-lang-changing] .testimonial__text,
+html[data-lang-changing] .cta-section__title,
+html[data-lang-changing] .cta-section__desc,
+html[data-lang-changing] .footer__tagline,
+html[data-lang-changing] .auth-label,
+html[data-lang-changing] .auth-tab {
+  opacity: 0 !important;
+  transform: translateY(-3px) !important;
+}
+
+/* Base transitions on those same elements (so they animate both ways) */
+.nav__link,
+.btn--ghost-nav,
+.btn--primary,
+.hero__badge-text,
+.hero__title,
+.hero__subtitle,
+.hero__cta,
+.hero__stats,
+.section__label,
+.section__title,
+.section__desc,
+.marquee__track,
+.service-card__title,
+.service-card__desc,
+.feature-card__title,
+.feature-card__desc,
+.pricing-card__header,
+.pricing-card__features,
+.p-toggle__lbl,
+.testimonial__text,
+.cta-section__title,
+.cta-section__desc,
+.footer__tagline,
+.auth-label,
+.auth-tab {
+  transition:
+    opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    /* preserve existing color/background transitions */
+    color 0.2s,
+    background 0.2s,
+    border-color 0.2s;
+}

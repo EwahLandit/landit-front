@@ -15,6 +15,7 @@ const SECTION_STYLES = `
   [data-reveal] {
     opacity: 0;
     transform: translateY(24px);
+    pointer-events: auto;
     transition: opacity 0.6s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
                 transform 0.6s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
   }

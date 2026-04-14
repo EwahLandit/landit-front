@@ -29,11 +29,13 @@ export default function Navbar() {
   const [showLoginPass, setShowLoginPass] = useState(false);
   
   // Register State
-  const [regName, setRegName] = useState('');
+  const [regFirstName, setRegFirstName] = useState('');
+  const [regLastName, setRegLastName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [showRegPass, setShowRegPass] = useState(false);
   const [strength, setStrength] = useState(0);
+  const [agreeTerms, setAgreeTerms] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -61,7 +63,7 @@ export default function Navbar() {
     if (wrap && panel) {
       wrap.style.height = panel.scrollHeight + 'px';
     }
-  }, [authTab, authOpen]);
+  }, [authTab, authOpen, agreeTerms, regFirstName, regLastName, regEmail, regPassword, strength]);
 
   const openAuth = (tab: AuthTab) => {
     setAuthTab(tab);
@@ -81,9 +83,11 @@ export default function Navbar() {
   };
 
   const handleRegisterSubmit = async () => {
-    if (!regName || !regEmail || !regPassword) { setError('Completa todos los campos.'); return; }
+    if (!regFirstName || !regLastName || !regEmail || !regPassword) { setError('Completa todos los campos.'); return; }
+    if (!agreeTerms) { setError(t('auth_terms_required')); return; }
+    const fullName = `${regFirstName.trim()} ${regLastName.trim()}`;
     setLoading(true); setError('');
-    const res = await authRegister(regName, regEmail, regPassword);
+    const res = await authRegister(fullName, regEmail, regPassword);
     setLoading(false);
     if (res.error) { setError(res.error); return; }
     setAuthOpen(false);
@@ -126,18 +130,24 @@ export default function Navbar() {
         .header { position:fixed; top:0; left:0; right:0; z-index:1000; height:var(--nav-h,68px); transition:background .3s var(--ease-out),box-shadow .3s var(--ease-out); }
         .header--scrolled { background:rgba(249,249,248,.88); backdrop-filter:blur(16px) saturate(1.4); -webkit-backdrop-filter:blur(16px) saturate(1.4); box-shadow:0 1px 0 var(--border),0 4px 16px rgba(0,0,0,.04); }
         [data-theme="dark"] .header--scrolled { background:rgba(10,10,10,.88); }
-        .nav { height:100%; display:grid; grid-template-columns:auto 1fr auto; align-items:center; max-width:1200px; margin:0 auto; padding:0 24px; }
+        /*
+         * Stable 3-column grid: equal 1fr sides so neither column reflows
+         * when language changes and button text gets longer/shorter.
+         * Logo is pinned to the start of column-1; actions to the end of column-3.
+         */
+        .nav { height:100%; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; max-width:1200px; margin:0 auto; padding:0 24px; }
         @media(min-width:768px){ .nav { padding:0 40px; } }
-        .nav__logo { display:flex; align-items:center; gap:10px; font-family:var(--font-display,'Syne',sans-serif); font-weight:800; font-size:1rem; letter-spacing:.06em; color:var(--text); text-decoration:none; }
+        .nav__logo { display:flex; align-items:center; gap:10px; font-family:var(--font-display,'Syne',sans-serif); font-weight:800; font-size:1rem; letter-spacing:.06em; color:var(--text); text-decoration:none; justify-self:start; }
         .nav__logo-mark { width:34px; height:34px; background:var(--accent,#0057ff); color:#fff; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:1rem; font-weight:800; transition:transform .3s var(--ease-spring); flex-shrink:0; }
         .nav__logo:hover .nav__logo-mark { transform:rotate(-8deg) scale(1.05); }
-        .nav__links { display:none; list-style:none; margin:0; padding:0; gap:4px; justify-content:center; align-items:center; }
+        .nav__links { display:none; list-style:none; margin:0; padding:0; gap:4px; justify-content:center; align-items:center; justify-self:center; }
         @media(min-width:768px){ .nav__links { display:flex; } }
         .nav__links.is-open { display:flex; flex-direction:column; position:fixed; top:var(--nav-h,68px); left:0; right:0; background:var(--bg-alt,#fff); padding:24px; border-bottom:1px solid var(--border); gap:4px; z-index:999; animation:slideDown .3s var(--ease-out); }
         .nav__links.is-open .nav__link { padding:12px 16px; font-size:1rem; }
         .nav__link { padding:8px 14px; font-size:.875rem; font-family:var(--font-display,'Syne',sans-serif); font-weight:500; color:var(--text-secondary,#555); border-radius:var(--radius-full,9999px); transition:color .2s,background .2s; white-space:nowrap; text-decoration:none; cursor:pointer; }
         .nav__link:hover { color:var(--accent,#0057ff); background:var(--accent-subtle,#e8f0ff); }
-        .nav__actions { display:flex; align-items:center; gap:8px; justify-content:flex-end; }
+        /* Actions: pinned to right edge of its 1fr column — never shifts */
+        .nav__actions { display:flex; align-items:center; gap:8px; justify-content:flex-end; justify-self:end; }
         .nav__hamburger { display:flex; flex-direction:column; gap:5px; padding:8px; border-radius:var(--radius-sm,6px); flex-shrink:0; background:none; border:none; cursor:pointer; }
         @media(min-width:768px){ .nav__hamburger { display:none; } }
         .nav__hamburger span { display:block; width:22px; height:1.5px; background:var(--text,#111); border-radius:2px; transition:transform .3s var(--ease-out),opacity .2s; }
@@ -156,8 +166,8 @@ export default function Navbar() {
         @media(min-width:768px){ .nav__cta-desktop { display:inline-flex; } }
 
         /* ── AUTH OVERLAY ── */
-        .auth-overlay { position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.45); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); opacity:0; pointer-events:none; transition:opacity .3s var(--ease-out); }
-        .auth-overlay.is-open { opacity:1; pointer-events:auto; }
+        .auth-overlay { position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.45); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); opacity:0; pointer-events:none; visibility:hidden; transition:opacity .3s var(--ease-out), visibility 0s .3s; }
+        .auth-overlay.is-open { opacity:1; pointer-events:auto; visibility:visible; transition:opacity .3s var(--ease-out), visibility 0s; }
 
         /* ── AUTH MODAL ── */
         .auth-modal { position:relative; width:100%; max-width:420px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:36px 36px 32px; box-shadow:0 32px 80px rgba(0,0,0,.22),0 8px 24px rgba(0,0,0,.12); transform:translateY(28px) scale(0.97); opacity:0; transition:transform .4s var(--ease-spring),opacity .35s var(--ease-out); overflow:hidden; }
@@ -182,6 +192,12 @@ export default function Navbar() {
 
         /* ── FIELDS ── */
         .auth-field { display:flex; flex-direction:column; gap:7px; }
+        .auth-field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        @media(max-width:380px){ .auth-field-row { grid-template-columns:1fr; } }
+
+        /* ── TERMS ERROR ── */
+        .auth-terms-hint { font-size:.73rem; color:#ff4d4d; font-family:var(--font-display,'Syne',sans-serif); font-weight:600; margin-top:2px; display:none; }
+        .auth-terms-hint.is-visible { display:block; }
         .auth-label { font-family:var(--font-display,'Syne',sans-serif); font-size:.75rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--text-secondary); }
         .auth-input-wrap { position:relative; display:flex; align-items:center; }
         .auth-input-icon { position:absolute; left:12px; color:var(--text-muted); pointer-events:none; flex-shrink:0; transition:color .2s; }
@@ -228,13 +244,13 @@ export default function Navbar() {
         .auth-social:active { transform:translateY(0); }
 
         /* ── STAGGER ANIMATIONS ── */
-        .auth-panel--active .auth-field:nth-child(1) { animation:authPanelIn .35s .04s var(--ease-out) both; }
-        .auth-panel--active .auth-field:nth-child(2) { animation:authPanelIn .35s .09s var(--ease-out) both; }
-        .auth-panel--active .auth-field:nth-child(3) { animation:authPanelIn .35s .14s var(--ease-out) both; }
-        .auth-panel--active .auth-row    { animation:authPanelIn .35s .18s var(--ease-out) both; }
-        .auth-panel--active .auth-submit { animation:authPanelIn .35s .22s var(--ease-out) both; }
-        .auth-panel--active .auth-divider{ animation:authPanelIn .35s .26s var(--ease-out) both; }
-        .auth-panel--active .auth-socials{ animation:authPanelIn .35s .30s var(--ease-out) both; }
+        .auth-panel--active > *:nth-child(1) { animation:authPanelIn .35s .04s var(--ease-out) both; }
+        .auth-panel--active > *:nth-child(2) { animation:authPanelIn .35s .09s var(--ease-out) both; }
+        .auth-panel--active > *:nth-child(3) { animation:authPanelIn .35s .14s var(--ease-out) both; }
+        .auth-panel--active > *:nth-child(4) { animation:authPanelIn .35s .18s var(--ease-out) both; }
+        .auth-panel--active > *:nth-child(5) { animation:authPanelIn .35s .22s var(--ease-out) both; }
+        .auth-panel--active > *:nth-child(6) { animation:authPanelIn .35s .26s var(--ease-out) both; }
+        .auth-panel--active > *:nth-child(7) { animation:authPanelIn .35s .30s var(--ease-out) both; }
 
         @media(max-width:480px){
           .auth-modal { padding:28px 20px 24px; }
@@ -424,15 +440,29 @@ export default function Navbar() {
 
             {/* ── REGISTER PANEL ── */}
             <div className={`auth-panel${authTab === 'register' ? ' auth-panel--active' : ''}`} ref={registerPanelRef}>
-              <div className="auth-field">
-                <label className="auth-label" htmlFor="regName">{t('auth_name')}</label>
-                <div className="auth-input-wrap">
-                  <svg className="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                  <input className="auth-input" type="text" id="regName" placeholder={t('auth_name_ph')} autoComplete="name" 
-                    value={regName} onChange={(e) => setRegName(e.target.value)} />
+              {/* First name + Last name side by side */}
+              <div className="auth-field-row">
+                <div className="auth-field">
+                  <label className="auth-label" htmlFor="regFirstName">{t('auth_firstname')}</label>
+                  <div className="auth-input-wrap">
+                    <svg className="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    <input className="auth-input" type="text" id="regFirstName" placeholder={t('auth_firstname_ph')} autoComplete="given-name"
+                      value={regFirstName} onChange={(e) => setRegFirstName(e.target.value)} />
+                  </div>
+                </div>
+                <div className="auth-field">
+                  <label className="auth-label" htmlFor="regLastName">{t('auth_lastname')}</label>
+                  <div className="auth-input-wrap">
+                    <svg className="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    <input className="auth-input" type="text" id="regLastName" placeholder={t('auth_lastname_ph')} autoComplete="family-name"
+                      value={regLastName} onChange={(e) => setRegLastName(e.target.value)} />
+                  </div>
                 </div>
               </div>
               <div className="auth-field">
@@ -478,13 +508,22 @@ export default function Navbar() {
               </div>
               <div className="auth-row">
                 <label className="auth-check">
-                  <input type="checkbox" id="agreeTerms" />
+                  <input
+                    type="checkbox"
+                    id="agreeTerms"
+                    checked={agreeTerms}
+                    onChange={(e) => setAgreeTerms(e.target.checked)}
+                  />
                   <span className="auth-check__box" />
                   <span>
-                    {t('auth_agree_pre') || 'Acepto los'}{' '}
-                    <a href="#" className="auth-link">{t('auth_terms') || 'Términos'}</a>
-                    {' '}{t('auth_agree_and') || 'y la'}{' '}
-                    <a href="#" className="auth-link">{t('auth_privacy') || 'Política de privacidad'}</a>
+                    {t('auth_agree_pre')}{' '}
+                    <a href="/terms" className="auth-link" target="_blank" rel="noopener noreferrer">
+                      {t('auth_terms')}
+                    </a>
+                    {' '}{t('auth_agree_and')}{' '}
+                    <a href="/privacy" className="auth-link" target="_blank" rel="noopener noreferrer">
+                      {t('auth_privacy')}
+                    </a>
                   </span>
                 </label>
               </div>
