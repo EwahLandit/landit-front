@@ -69,7 +69,7 @@ interface SiteContextType {
   updateFeature: (index: number, field: keyof FeatureItem, value: string) => void;
   saveSite: () => Promise<void>;
   loadSite: () => Promise<void>;
-  createSite: (templateId: TemplateId, slug: string) => Promise<void>;
+  createSite: (templateId: string, slug: string, content?: any) => Promise<void>;
 }
 
 const SiteContext = createContext<SiteContextType | undefined>(undefined);
@@ -97,7 +97,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const createSite = async (templateId: TemplateId, slug: string) => {
+  const createSite = async (templateId: string, slug: string, content?: any) => {
     try {
       const res = await fetch(`${API_BASE}/websites`, {
         method: 'POST',
@@ -105,7 +105,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({
           template_id: templateId,
           slug,
-          content: DEFAULT_CONTENT
+          content: content ?? DEFAULT_CONTENT
         })
       });
       if (res.ok) {

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { apiGetStats, apiGetNotifications, DashboardStats, NotificationItem } from '../../lib/api';
+import { getNotificationIcon } from '../../lib/notificationIcons';
+import { useNotifications } from '../../context/NotificationContext';
 
 function formatTime(s: number) {
   return `${Math.floor(s / 60)}m ${s % 60}s`;
@@ -30,16 +32,17 @@ function timeAgo(d: string) {
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { notifications } = useNotifications();
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [notifs, setNotifs] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([apiGetStats(), apiGetNotifications()]).then(([s, n]) => {
+    const fetchStats = async () => {
+      const s = await apiGetStats();
       if (!('error' in s)) setStats(s);
-      if (!('error' in n)) setNotifs(n.slice(0, 4));
       setLoading(false);
-    });
+    };
+    fetchStats();
   }, []);
 
   const cards = stats ? [
@@ -138,11 +141,11 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))
-            : notifs.length === 0
+            : notifications.length === 0
               ? <p className="empty-notif">Sin actividad reciente.</p>
-              : notifs.map(n => (
+              : notifications.slice(0, 4).map(n => (
                   <div key={n.id} className="activity-item">
-                    <div className="activity-icon" style={{ background:n.icon_bg, color:n.icon_color }}>{n.icon}</div>
+                    <div className="activity-icon" style={{ background:n.icon_bg, color:n.icon_color }}>{getNotificationIcon(n.icon)}</div>
                     <div>
                       <p className="activity-text">{n.title}</p>
                       <p className="activity-time">{timeAgo(n.created_at)}</p>

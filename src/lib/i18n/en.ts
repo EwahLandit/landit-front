@@ -14,6 +14,8 @@ export const translations: Record<TranslationKey, string> = {
   nav_contact: 'Contact',
   nav_cta: 'Get Started Free',
   nav_login: 'Log in',
+  nav_dashboard: 'Dashboard',
+  auth_logout: 'Logout',
 
   // ── Auth modal ──
   auth_signin: 'Sign in',

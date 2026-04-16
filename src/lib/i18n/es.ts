@@ -12,6 +12,8 @@ export const translations = {
   nav_contact: 'Contacto',
   nav_cta: 'Comenzar gratis',
   nav_login: 'Iniciar sesión',
+  nav_dashboard: 'Panel Control',
+  auth_logout: 'Salir',
 
   // ── Auth modal ──
   auth_signin: 'Iniciar sesión',

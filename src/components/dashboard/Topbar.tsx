@@ -2,30 +2,15 @@ import { useTheme } from '../../hooks/useTheme';
 import { useNavigate } from 'react-router-dom';
 
 interface TopbarProps {
-  onMenuToggle: () => void;
   title?: string;
   trialBanner?: React.ReactNode;
 }
 
-export default function Topbar({ onMenuToggle, title, trialBanner }: TopbarProps) {
+export default function Topbar({ title, trialBanner }: TopbarProps) {
   const { theme, toggle } = useTheme();
 
   return (
     <div className="topbar" style={{ flexWrap: 'nowrap', alignItems: 'center' }}>
-      {/* Hamburger */}
-      <button
-        className="btn btn--ghost"
-        onClick={onMenuToggle}
-        aria-label="Abrir menú"
-        style={{ padding: '8px', borderRadius: 'var(--radius)', flexShrink: 0 }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
-      </button>
-
       {/* Trial banner — ocupa el espacio central */}
       {trialBanner && (
         <div style={{ flex: 1, margin: '0 12px' }}>

@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import { useSite } from '../../context/SiteContext';
+import { useNotifications } from '../../context/NotificationContext';
 import { useSubscription } from '../../hooks/useSubscription';
 
 export default function DashboardLayout() {
@@ -11,6 +12,7 @@ export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { loadSite } = useSite();
+  const { unreadCount } = useNotifications();
   const { status: sub, upgrade } = useSubscription();
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [upgradingPlan, setUpgradingPlan] = useState('');
@@ -74,11 +76,8 @@ export default function DashboardLayout() {
         .sidebar.collapsed .sidebar__nav {
           padding: 8px 8px;
         }
-        .sidebar.collapsed .sidebar__footer {
-          padding: 12px 8px;
-        }
-        .sidebar.collapsed .sidebar__user {
-          padding: 8px;
+        .sidebar.collapsed .sidebar__hamburger {
+          margin: 0 8px 12px;
           justify-content: center;
         }
         .sidebar__logo {
@@ -94,6 +93,15 @@ export default function DashboardLayout() {
           flex-shrink: 0;
         }
         .sidebar__logo:hover .sidebar__logo-mark { transform: rotate(-8deg) scale(1.05); }
+        .sidebar__hamburger {
+          display: flex; align-items: center; justify-content: center;
+          width: 40px; height: 40px; margin: 0 24px 12px; padding: 8px;
+          border-radius: var(--radius); background: transparent; border: none;
+          color: var(--text-secondary); cursor: pointer;
+          transition: all .2s var(--ease-out);
+          flex-shrink: 0;
+        }
+        .sidebar__hamburger:hover { background: var(--border); color: var(--text); }
         .sidebar__nav { flex: 1; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; }
         .sidebar__link {
           display: flex; align-items: center; gap: 12px; padding: 10px 16px;
@@ -281,18 +289,18 @@ export default function DashboardLayout() {
           isOpen={sidebarOpen}
           collapsed={collapsed}
           onClose={() => setSidebarOpen(false)}
-          notificationCount={3}
+          onMenuToggle={() => {
+            if (window.innerWidth < 768) {
+              setSidebarOpen(prev => !prev);
+            } else {
+              setCollapsed(prev => !prev);
+            }
+          }}
+          notificationCount={unreadCount}
         />
 
         <main className={`panel-main${collapsed ? ' collapsed' : ''}`}>
           <Topbar
-            onMenuToggle={() => {
-              if (window.innerWidth < 768) {
-                setSidebarOpen(prev => !prev);
-              } else {
-                setCollapsed(prev => !prev);
-              }
-            }}
             trialBanner={sub?.is_trial && !sub.is_expired ? (
               <div className={`trial-banner${(sub.days_left ?? 99) <= 3 ? ' trial-banner--urgent' : ''}`}>
                 <span className="trial-banner__text">

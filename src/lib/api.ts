@@ -96,3 +96,79 @@ export const apiCreateApiKey = (name: string) =>
   fetchApi<ApiKeyItem>('/settings/api-keys', { method: 'POST', body: JSON.stringify({ name }) });
 export const apiRevokeApiKey = (id: number) =>
   fetchApi<{ message: string }>(`/settings/api-keys/${id}`, { method: 'DELETE' });
+
+// ── Block builder ──────────────────────────────────────────────────────────
+
+export interface SiteContentV2 {
+  schema_version: 2;
+  site: Record<string, unknown>;
+  theme: Record<string, unknown>;
+  blocks: unknown[];
+}
+
+export interface AssetItem {
+  id: number;
+  filename: string;
+  url: string;
+  mime_type: string;
+  size_bytes: number;
+  width: number | null;
+  height: number | null;
+  created_at: string;
+}
+
+export interface PublicSite {
+  content: unknown;
+  slug: string;
+}
+
+/** Multipart upload — does NOT set Content-Type so the browser adds the boundary automatically. */
+export async function fetchApiUpload<T>(
+  path: string,
+  formData: FormData,
+): Promise<T | { error: string }> {
+  try {
+    const token = localStorage.getItem('landit-token');
+    const res = await fetch(`${API_URL}${path}`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) return { error: data.detail ?? `Error ${res.status}` };
+    return data as T;
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+export const apiSaveBlocks = (websiteId: number, content: SiteContentV2) =>
+  fetchApi<{ message: string }>(`/websites/${websiteId}/blocks`, {
+    method: 'PUT',
+    body: JSON.stringify(content),
+  });
+
+export const apiUploadAsset = (websiteId: number, file: File) => {
+  const form = new FormData();
+  form.append('file', file);
+  return fetchApiUpload<AssetItem>(`/websites/${websiteId}/assets`, form);
+};
+
+export const apiListAssets = (websiteId: number) =>
+  fetchApi<AssetItem[]>(`/websites/${websiteId}/assets`);
+
+export const apiDeleteAsset = (websiteId: number, assetId: number) =>
+  fetchApi<{ message: string }>(`/websites/${websiteId}/assets/${assetId}`, { method: 'DELETE' });
+
+export const apiGetPublicSite = (slug: string) =>
+  fetchApi<PublicSite>(`/public/sites/${slug}`);
+
+export const apiSubmitForm = (
+  slug: string,
+  blockId: string,
+  fields: Record<string, unknown>,
+) =>
+  fetchApi<{ message: string }>(`/public/sites/${slug}/submit`, {
+    method: 'POST',
+    body: JSON.stringify({ block_id: blockId, fields }),
+  });

@@ -2,36 +2,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../../components/ui/Modal';
 import TemplatePickerModal from '../../components/builder/TemplatePickerModal';
-import { useSite, TemplateId } from '../../context/SiteContext';
-import ModernTemplate from '../../components/builder/templates/ModernTemplate';
-import MinimalTemplate from '../../components/builder/templates/MinimalTemplate';
-import BoldTemplate from '../../components/builder/templates/BoldTemplate';
+import { useSite } from '../../context/SiteContext';
+import type { SiteContentV2 } from '../../blocks/types';
 
-// Constantes para el renderizado local de indicadores
 const SCORE_COLORS: Record<string, string> = {
   good: '#00a86b',
   needs: '#ff9900',
   poor: '#ff4d4d',
 };
-
-function TemplateMiniature({ templateId, content }: { templateId: TemplateId, content: any }) {
-  const scale = 0.5;
-  const components = {
-    modern: ModernTemplate,
-    minimal: MinimalTemplate,
-    bold: BoldTemplate
-  };
-  const Selected = components[templateId] || ModernTemplate;
-  
-  return (
-    <div style={{ 
-      width: '200%', height: '200%', transform: `scale(${scale})`, transformOrigin: 'top left',
-      overflow: 'hidden', pointerEvents: 'none'
-    }}>
-      <Selected content={content} />
-    </div>
-  );
-}
 
 function DomainIcon() {
   return (
@@ -103,8 +81,8 @@ export default function WebsitePage() {
     }
   }
 
-  async function handleTemplateSelect(templateId: TemplateId, slug: string) {
-    await createSite(templateId, slug);
+  async function handleTemplateSelect(presetId: string, slug: string, preset: SiteContentV2) {
+    await createSite(presetId, slug, preset);
     setIsTemplateOpen(false);
     navigate('/panel/website/editor');
   }
@@ -391,15 +369,18 @@ export default function WebsitePage() {
                 onClick={() => navigate(`/landing/${siteData.slug}`)}
                 title="Ver sitio completo"
               >
-                <div className="site-preview__thumb-inner">
-                  <TemplateMiniature templateId={siteData.templateId} content={siteData.content} />
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 6, color: 'var(--text-muted)', fontSize: '.72rem' }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: .4 }}>
+                    <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+                  </svg>
+                  <span style={{ opacity: .5 }}>Click para ver</span>
                 </div>
               </div>
             </div>
             {/* Info al lado */}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '.75rem', fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 4 }}>Plantilla</div>
-              <div style={{ fontSize: '.9rem', color: 'var(--text)', marginBottom: 12, textTransform: 'capitalize' }}>{siteData.templateId}</div>
+              <div style={{ fontSize: '.9rem', color: 'var(--text)', marginBottom: 12, textTransform: 'capitalize' }}>{siteData.templateId ?? 'Personalizado'}</div>
               <div style={{ fontSize: '.75rem', fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 4 }}>URL</div>
               <div style={{ fontSize: '.85rem', color: 'var(--accent)', wordBreak: 'break-all' }}>{siteData.slug}.landit.now</div>
             </div>

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ToastProvider } from './components/ui/Toast';
 import { AuthProvider } from './hooks/useAuth';
 import { SiteProvider } from './context/SiteContext';
+import { NotificationProvider } from './context/NotificationContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import DashboardLayout from './components/dashboard/DashboardLayout';
@@ -21,8 +22,9 @@ function App() {
   return (
     <AuthProvider>
       <SiteProvider>
-        <ToastProvider>
-          <BrowserRouter>
+        <NotificationProvider>
+          <ToastProvider>
+            <BrowserRouter>
             <Routes>
               <Route path="/" element={<LandingPage />} />
 
@@ -49,6 +51,7 @@ function App() {
             </Routes>
           </BrowserRouter>
         </ToastProvider>
+        </NotificationProvider>
       </SiteProvider>
     </AuthProvider>
   );
